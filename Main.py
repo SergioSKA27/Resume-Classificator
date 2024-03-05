@@ -4,6 +4,7 @@ import requests
 import torch
 from datasets import load_dataset
 from sentence_transformers.util import semantic_search
+import time
 
 
 st.set_page_config(layout='wide')
@@ -63,23 +64,28 @@ with st.expander('Ver embedding'):
 
 
 top = st.slider('Seleccione el numero de perfiles a seleccionar',min_value=5, max_value=30)
-hits = semantic_search(query_embeddings, dataset_embeddings, top_k=top)
 
-st.header('Resultados')
-st.write(hits)
+if st.button('Buscar'):
+    with st.spinner('Buscando Candidatos...'):
+        time.sleep(2)
+        hits = semantic_search(query_embeddings, dataset_embeddings, top_k=top)
+    st.toast('Candidatos Encontrados',icon='🚀')
 
-for i in range(len(hits[0])):
-    st.write(':blue[Score:]', hits[0][i]['score'])
-    try:
-        with st.expander('CV HTML'):
-            st.write(dataframe[hits[0][i]['corpus_id']]['Resume_html'],unsafe_allow_html=True)
-        with st.expander('CV STR'):
-            st.write(dataframe.iloc[hits[0][i]['corpus_id']]['Resume_str'])
-    except:
-        with st.expander('HTML'):
-            st.write(dataframe['train'][hits[0][i]['corpus_id']]['Resume_html'],unsafe_allow_html=True)
-        with st.expander('TEXT'):
-            st.write(dataframe['train'][hits[0][i]['corpus_id']]['Resume_str'])
+    st.header('Resultados')
+    st.write(hits)
+
+    for i in range(len(hits[0])):
+        st.write(':blue[Score:]', hits[0][i]['score'])
+        try:
+            with st.expander('CV HTML'):
+                st.write(dataframe[hits[0][i]['corpus_id']]['Resume_html'],unsafe_allow_html=True)
+            with st.expander('CV STR'):
+                st.write(dataframe.iloc[hits[0][i]['corpus_id']]['Resume_str'])
+        except:
+            with st.expander('HTML'):
+                st.write(dataframe['train'][hits[0][i]['corpus_id']]['Resume_html'],unsafe_allow_html=True)
+            with st.expander('TEXT'):
+                st.write(dataframe['train'][hits[0][i]['corpus_id']]['Resume_str'])
 
 
-    st.divider()
+        st.divider()
