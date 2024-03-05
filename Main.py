@@ -6,9 +6,12 @@ from datasets import load_dataset
 from sentence_transformers.util import semantic_search
 
 
+st.set_page_config(layout='wide')
 model_id = "sentence-transformers/all-MiniLM-L6-v2"
 
-
+st.title('Calificador de CV')
+st.caption('Calificador de cv  basado en similaridad semantica.')
+st.divider()
 
 api_url = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{model_id}"
 headers = {"Authorization": f"Bearer {st.secrets['HF_TOKEN']}"}
@@ -30,13 +33,17 @@ def embedd_prompt(prompt):
     output = query(question)
     return output
 
+@st.cache_data
+def load_data():
+    dataframe = load_dataset('e-sdmartinez/Resumes')
+    return dataframe
 
-
-dataframe = pd.read_csv('Resume.csv')
+dataframe = load_data()
+#dataframe = pd.read_csv('Resume.csv')
 dataset_embeddings = return_embedings()
 
 st.header('Original Data')
-st.dataframe(dataframe)
+st.dataframe(pd.DataFrame(dataframe['train']))
 
 st.header('Embeddings')
 
@@ -61,9 +68,18 @@ hits = semantic_search(query_embeddings, dataset_embeddings, top_k=top)
 st.header('Resultados')
 st.write(hits)
 
-for i in range(len(hits[0])): 
-    with st.expander('CV HTML'):
-        st.write(dataframe.iloc[hits[0][i]['corpus_id']]['Resume_html'],unsafe_allow_html=True)
-    with st.expander('CV STR'):
-        st.write(dataframe.iloc[hits[0][i]['corpus_id']]['Resume_str'])
+for i in range(len(hits[0])):
+    st.write(':blue[Score:]', hits[0][i]['score'])
+    try:
+        with st.expander('CV HTML'):
+            st.write(dataframe[hits[0][i]['corpus_id']]['Resume_html'],unsafe_allow_html=True)
+        with st.expander('CV STR'):
+            st.write(dataframe.iloc[hits[0][i]['corpus_id']]['Resume_str'])
+    except:
+        with st.expander('HTML'):
+            st.write(dataframe['train'][hits[0][i]['corpus_id']]['Resume_html'],unsafe_allow_html=True)
+        with st.expander('TEXT'):
+            st.write(dataframe['train'][hits[0][i]['corpus_id']]['Resume_str'])
+
+
     st.divider()
