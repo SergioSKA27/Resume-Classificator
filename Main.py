@@ -64,15 +64,15 @@ with st.expander('Ver embedding'):
 
 
 top = st.slider('Seleccione el numero de perfiles a seleccionar',min_value=5, max_value=30)
+_,bcol = st.columns([.7,.3])
 
-if st.button('Buscar'):
+if bcol.button('🔍Buscar',use_container_width=True):
     with st.spinner('Buscando Candidatos...'):
         time.sleep(2)
         hits = semantic_search(query_embeddings, dataset_embeddings, top_k=top)
     st.toast('Candidatos Encontrados',icon='🚀')
 
     st.header('Resultados')
-    st.write(hits)
 
     for i in range(len(hits[0])):
         st.write(':blue[Score:]', hits[0][i]['score'])
@@ -89,3 +89,4 @@ if st.button('Buscar'):
 
 
         st.divider()
+    st.write(hits)
